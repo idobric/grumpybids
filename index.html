@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrumpyBids — Win Government Contracts Without Losing Your Mind</title>
+  <meta name="description" content="GrumpyBids uses AI to find government contract opportunities, write bids, and handle compliance — so small businesses can win without the paperwork nightmare.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    /* ============================
+       RESET & BASE
+       ============================ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #FAF9F7;
+      --red: #E8837A;
+      --red-hover: #D9655B;
+      --text: #1A1A1A;
+      --text-body: #4A4A4A;
+      --text-muted: #8A8A8A;
+      --divider: #EFEFED;
+      --card-bg: #FDFCFB;
+      --font-display: 'DM Serif Display', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --max-width: 1180px;
+      --section-padding: 120px 24px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg);
+      color: var(--text-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+    }
+
+    /* ============================
+       TYPOGRAPHY
+       ============================ */
+    h1, h2, h3 {
+      font-family: var(--font-display);
+      color: var(--text);
+      font-weight: 400;
+      line-height: 1.15;
+    }
+
+    h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); }
+    h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); }
+    h3 { font-size: 1.25rem; }
+
+    p { max-width: 600px; }
+
+    .section-label {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 12px;
+    }
+
+    .section-heading {
+      margin-bottom: 48px;
+    }
+
+    /* ============================
+       LAYOUT
+       ============================ */
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: var(--section-padding);
+    }
+
+    /* ============================
+       BUTTONS
+       ============================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: 1.5px solid var(--red);
+      background: transparent;
+      color: var(--red);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-sm {
+      padding: 8px 20px;
+      font-size: 0.85rem;
+    }
+
+    .text-link {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .text-link:hover {
+      color: var(--red);
+    }
+
+    .text-link span {
+      transition: transform 0.2s ease;
+      display: inline-block;
+    }
+
+    .text-link:hover span {
+      transform: translateX(4px);
+    }
+
+    /* ============================
+       ANIMATIONS
+       ============================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Stagger children */
+    .stagger > .reveal:nth-child(1) { transition-delay: 0s; }
+    .stagger > .reveal:nth-child(2) { transition-delay: 0.1s; }
+    .stagger > .reveal:nth-child(3) { transition-delay: 0.2s; }
+    .stagger > .reveal:nth-child(4) { transition-delay: 0.3s; }
+
+    /* ============================
+       1. NAV
+       ============================ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(250, 249, 247, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: border-color 0.3s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    nav.scrolled {
+      border-bottom-color: var(--red);
+    }
+
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-logo .grumpy-icon {
+      font-size: 1.1rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-body);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-cta {
+      margin-left: 8px;
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      margin: 5px 0;
+      transition: all 0.3s ease;
+    }
+
+    /* ============================
+       2. HERO
+       ============================ */
+    .hero {
+      padding: 160px 24px 100px;
+    }
+
+    .hero-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-content h1 {
+      margin-bottom: 24px;
+      max-width: 580px;
+    }
+
+    .hero-content p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: var(--text-body);
+      margin-bottom: 36px;
+      max-width: 500px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .hero-trust {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* Mock bid card */
+    .hero-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--red);
+      border-radius: 12px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      bottom: 8px;
+      left: 8px;
+      border: 1px solid rgba(232, 131, 122, 0.25);
+      border-radius: 12px;
+      z-index: -1;
+    }
+
+    .card-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+      border: 1px solid var(--red);
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .card-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .card-meta strong {
+      color: var(--text-body);
+      font-weight: 600;
+    }
+
+    .card-divider {
+      border: none;
+      border-top: 1px solid var(--divider);
+      margin: 16px 0;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-deadline {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .match-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(232, 131, 122, 0.08);
+      border: 1px solid rgba(232, 131, 122, 0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--red-hover);
+    }
+
+    .match-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    /* ============================
+       3. PAIN STRIP
+       ============================ */
+    .pain-strip {
+      background: var(--divider);
+      padding: 72px 24px;
+    }
+
+    .pain-strip .container {
+      text-align: center;
+    }
+
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .pain-item {
+      font-size: 0.95rem;
+      color: var(--text-body);
+      line-height: 1.6;
+    }
+
+    .pain-item .emoji {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .pain-closer {
+      font-style: italic;
+      color: var(--text-body);
+      font-size: 1rem;
+    }
+
+    /* ============================
+       4. FEATURES
+       ============================ */
+    .features {
+      padding: var(--section-padding);
+    }
+
+    .features .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--red);
+      border-radius: 12px;
+      padding: 32px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232, 131, 122, 0.08);
+    }
+
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--text-body);
+    }
+
+    /* ============================
+       5. HOW IT WORKS
+       ============================ */
+    .how-it-works {
+      padding: var(--section-padding);
+    }
+
+    .how-it-works .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    /* Connecting line */
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(16.66% + 14px);
+      right: calc(16.66% + 14px);
+      height: 1px;
+      background: var(--red);
+      opacity: 0.4;
+    }
+
+    .step {
+      text-align: center;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .step-number {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1.5px solid var(--red);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--red);
+      margin-bottom: 20px;
+      background: var(--bg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .step h3 {
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      font-size: 0.9rem;
+      color: var(--text-body);
+      max-width: 280px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ============================
+       6. SOCIAL PROOF
+       ============================ */
+    .social-proof {
+      padding: var(--section-padding);
+    }
+
+    .social-proof .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .testimonial {
+      border-left: 3px solid var(--red);
+      padding: 28px 32px;
+      background: var(--card-bg);
+      border-radius: 0 12px 12px 0;
+    }
+
+    .testimonial blockquote {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text);
+      font-style: italic;
+      margin-bottom: 16px;
+      max-width: none;
+    }
+
+    .testimonial cite {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: normal;
+      font-weight: 500;
+    }
+
+    /* ============================
+       7. THE MATH (Value Proposition)
+       ============================ */
+    .the-math {
+      padding: var(--section-padding);
+    }
+
+    .the-math .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    /* Sub-section A: Status Quo Stats */
+    .status-quo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 96px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 36px 24px;
+      position: relative;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 48px;
+      height: 2px;
+      background: var(--red);
+      opacity: 0.5;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 5vw, 3.8rem);
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .stat-explain {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 260px;
+      margin: 0 auto;
+    }
+
+    /* Sub-section B: Before / After */
+    .before-after-label {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .before-after {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      max-width: 780px;
+      margin: 0 auto 72px;
+      align-items: start;
+    }
+
+    .ba-column {
+      padding: 0 40px;
+    }
+
+    .ba-column-header {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .ba-before .ba-column-header {
+      color: var(--text-muted);
+    }
+
+    .ba-after .ba-column-header {
+      color: var(--red);
+      border-bottom-color: rgba(232, 131, 122, 0.3);
+    }
+
+    .ba-row {
+      margin-bottom: 28px;
+    }
+
+    .ba-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .ba-value {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .ba-before .ba-value {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: rgba(138, 138, 138, 0.4);
+    }
+
+    .ba-after .ba-value {
+      color: var(--text);
+    }
+
+    .ba-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .ba-after .ba-desc {
+      color: var(--text-body);
+    }
+
+    .ba-divider {
+      width: 1px;
+      background: var(--red);
+      opacity: 0.3;
+      min-height: 100%;
+      align-self: stretch;
+    }
+
+    /* Punchline & CTA */
+    .math-punchline {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .math-punchline blockquote {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.4;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .math-cta {
+      text-align: center;
+    }
+
+    .math-cta .btn {
+      margin-bottom: 14px;
+    }
+
+    .math-cta .math-sub {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      max-width: none;
+    }
+
+    /* ============================
+       8. FOOTER CTA BAND
+       ============================ */
+    .footer-cta {
+      padding: 80px 24px;
+      border-top: 1.5px solid var(--red);
+      text-align: center;
+    }
+
+    .footer-cta h2 {
+      margin-bottom: 28px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer-cta .btn {
+      margin-bottom: 16px;
+    }
+
+    .footer-cta .sub-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================
+       9. FOOTER
+       ============================ */
+    footer {
+      padding: 40px 24px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .footer-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .footer-copy {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .footer-sub {
+      width: 100%;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================
+       RESPONSIVE
+       ============================ */
+    @media (max-width: 900px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .hero-card {
+        max-width: 400px;
+      }
+
+      .pain-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .steps::before {
+        display: none;
+      }
+
+      .testimonials {
+        grid-template-columns: 1fr;
+      }
+
+      .status-quo-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        max-width: 360px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .before-after {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        max-width: 360px;
+      }
+
+      .ba-divider {
+        width: 100%;
+        height: 1px;
+        min-height: 1px;
+      }
+
+      .ba-column {
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      :root {
+        --section-padding: 80px 20px;
+      }
+
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: rgba(250, 249, 247, 0.98);
+        backdrop-filter: blur(12px);
+        flex-direction: column;
+        padding: 24px;
+        gap: 20px;
+        border-bottom: 1px solid var(--divider);
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .nav-cta {
+        margin-left: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .hero {
+        padding: 120px 20px 64px;
+      }
+
+      .hero-ctas {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .pain-strip {
+        padding: 56px 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.6rem;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .footer-left {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================
+       1. NAV
+       ============================ -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="grumpy-icon">😠</span> GrumpyBids
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#the-math">The Math</a></li>
+        <li><a href="#">Sign In</a></li>
+        <li class="nav-cta"><a href="#early-access" class="btn btn-sm">Get Early Access →</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============================
+       2. HERO
+       ============================ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content reveal">
+        <h1>Stop losing government contracts to companies with worse products and better paperwork.</h1>
+        <p>GrumpyBids uses AI to find the right opportunities, write the bids, and handle the compliance headaches — so you can do the work you're actually good at.</p>
+        <div class="hero-ctas">
+          <a href="#early-access" class="btn">Get Early Access</a>
+          <a href="#how-it-works" class="text-link">See How It Works <span>→</span></a>
+        </div>
+        <p class="hero-trust">Trusted by SMBs who have better things to do.</p>
+      </div>
+      <div class="reveal" style="transition-delay: 0.15s;">
+        <div class="hero-card">
+          <span class="card-badge">New Match</span>
+          <div class="card-title">IT Modernization Support Services — Dept. of Veterans Affairs</div>
+          <p class="card-meta"><strong>Agency:</strong> U.S. Department of Veterans Affairs</p>
+          <p class="card-meta"><strong>NAICS:</strong> 541512 — Computer Systems Design</p>
+          <p class="card-meta"><strong>Set-aside:</strong> Small Business (SBA)</p>
+          <hr class="card-divider">
+          <div class="card-footer">
+            <span class="card-deadline">Deadline: Apr 14, 2026</span>
+            <span class="match-badge"><span class="match-dot"></span> 94% Match</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       3. PAIN STRIP
+       ============================ -->
+  <section class="pain-strip">
+    <div class="container">
+      <div class="pain-grid stagger">
+        <div class="pain-item reveal">
+          <span class="emoji">😤</span>
+          You missed a SAM.gov deadline because you didn't know it existed.
+        </div>
+        <div class="pain-item reveal">
+          <span class="emoji">😤</span>
+          You spent 3 days writing a proposal. They picked someone else on price.
+        </div>
+        <div class="pain-item reveal">
+          <span class="emoji">😤</span>
+          You gave up on government contracts because the process felt designed by sadists.
+        </div>
+      </div>
+      <p class="pain-closer reveal" style="transition-delay: 0.3s;">Yeah. We know. That's why we built this.</p>
+    </div>
+  </section>
+
+  <!-- ============================
+       4. FEATURES
+       ============================ -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Features</p>
+        <h2 class="section-heading">Everything you hate about bidding — handled.</h2>
+      </div>
+      <div class="features-grid stagger">
+        <div class="feature-card reveal">
+          <span class="feature-icon">🔍</span>
+          <h3>Opportunity Discovery</h3>
+          <p>We scan federal, state, and local databases so you don't have to live in SAM.gov.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">✍️</span>
+          <h3>AI Bid Writing</h3>
+          <p>Generate compliant, professional proposals based on your past work and capabilities.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">✅</span>
+          <h3>Compliance Autopilot</h3>
+          <p>Certifications, registrations, deadlines. We track them. You sleep.</p>
+        </div>
+        <div class="feature-card reveal">
+          <span class="feature-icon">📊</span>
+          <h3>Win/Loss Intelligence</h3>
+          <p>Understand why you won or lost and get sharper every time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       5. HOW IT WORKS
+       ============================ -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-heading">Three steps. No manual labor.</h2>
+      </div>
+      <div class="steps stagger">
+        <div class="step reveal">
+          <div class="step-number">1</div>
+          <h3>Tell us what you do</h3>
+          <p>Upload your capabilities, past projects, and certifications. Takes 10 minutes.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-number">2</div>
+          <h3>We find your opportunities</h3>
+          <p>GrumpyBids surfaces contracts that actually match your business — not everything on the internet.</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-number">3</div>
+          <h3>Submit bids that don't embarrass you</h3>
+          <p>Review, edit, and submit AI-drafted proposals that sound like you wrote them. On a good day.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       6. SOCIAL PROOF
+       ============================ -->
+  <section class="social-proof">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">What People Say</p>
+        <h2 class="section-heading">Don't take our word for it.</h2>
+      </div>
+      <div class="testimonials stagger">
+        <div class="testimonial reveal">
+          <blockquote>"I won my first government contract in 6 weeks. I'd been trying for 2 years on my own."</blockquote>
+          <cite>— IT services firm, Austin TX</cite>
+        </div>
+        <div class="testimonial reveal">
+          <blockquote>"It's like having a BD person who never complains and works on Sundays."</blockquote>
+          <cite>— Construction SMB, Ohio</cite>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       7. THE MATH (Value Proposition)
+       ============================ -->
+  <section class="the-math" id="the-math">
+    <div class="container">
+
+      <!-- Sub-section A: The Cost of Doing It Yourself -->
+      <div class="reveal">
+        <p class="section-label">The Math</p>
+        <h2 class="section-heading">Stop paying $4,500 to maybe win a contract.</h2>
+      </div>
+      <div class="status-quo-grid stagger">
+        <div class="stat-card reveal">
+          <div class="stat-number" data-count="4500" data-prefix="$" data-separator=",">$0</div>
+          <div class="stat-label">Cost per bid</div>
+          <p class="stat-explain">In labor, tools, and owner time. Per proposal. Every time.</p>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-number" data-count="35" data-suffix=" hrs">0 hrs</div>
+          <div class="stat-label">Time to prepare</div>
+          <p class="stat-explain">Reading RFPs, writing proposals, chasing compliance docs.</p>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-number" data-count="10" data-prefix="~" data-suffix="%">~0%</div>
+          <div class="stat-label">Average win rate</div>
+          <p class="stat-explain">For SMBs bidding without dedicated BD support.</p>
+        </div>
+      </div>
+
+      <!-- Sub-section B: Before / After -->
+      <div class="before-after-label reveal">
+        <p class="section-label">With GrumpyBids</p>
+        <h2 class="section-heading">Same business. Different odds.</h2>
+      </div>
+      <div class="before-after reveal">
+        <div class="ba-column ba-before">
+          <div class="ba-column-header">Before</div>
+          <div class="ba-row">
+            <div class="ba-value">35 hrs per bid</div>
+            <div class="ba-desc">Nights and weekends, mostly</div>
+          </div>
+          <div class="ba-row">
+            <div class="ba-value">1 bid per month</div>
+            <div class="ba-desc">If you're lucky</div>
+          </div>
+          <div class="ba-row">
+            <div class="ba-value">~10% win rate</div>
+            <div class="ba-desc">Hope isn't a strategy</div>
+          </div>
+        </div>
+        <div class="ba-divider"></div>
+        <div class="ba-column ba-after">
+          <div class="ba-column-header">After</div>
+          <div class="ba-row">
+            <div class="ba-value">3 hrs per bid</div>
+            <div class="ba-desc">Review and submit. That's it.</div>
+          </div>
+          <div class="ba-row">
+            <div class="ba-value">3–5 bids per month</div>
+            <div class="ba-desc">Volume changes everything</div>
+          </div>
+          <div class="ba-row">
+            <div class="ba-value">Measurably better</div>
+            <div class="ba-desc">Smarter proposals. Sharper every round.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Punchline & CTA -->
+      <div class="math-punchline reveal">
+        <blockquote>"One won contract pays for years of GrumpyBids.<br>We'll let you do the math."</blockquote>
+      </div>
+      <div class="math-cta reveal">
+        <a href="#early-access" class="btn">Join the Waitlist →</a>
+        <p class="math-sub">Early access is free. No credit card. No SAM.gov login required.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================
+       8. FOOTER CTA BAND
+       ============================ -->
+  <section class="footer-cta" id="early-access">
+    <div class="container">
+      <div class="reveal">
+        <h2>Ready to stop losing bids to bad paperwork?</h2>
+        <a href="#" class="btn">Start Free →</a>
+        <p class="sub-text">No credit card required. No SAM.gov login nightmares.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       9. FOOTER
+       ============================ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <a href="#" class="footer-logo">😠 GrumpyBids</a>
+        <span class="footer-copy">© 2025 GrumpyBids. All rights reserved.</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+      <p class="footer-sub">A GrumpyWorks product.</p>
+    </div>
+  </footer>
+
+  <!-- ============================
+       JS — Scroll reveal & Nav
+       ============================ -->
+  <script>
+    // Sticky nav border on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 10);
+    }, { passive: true });
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+
+    // Close mobile menu on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+      });
+    });
+
+    // Intersection Observer for reveal animations
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    reveals.forEach(el => observer.observe(el));
+
+    // Counter animation for stat numbers
+    const counters = document.querySelectorAll('.stat-number[data-count]');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.count, 10);
+          const prefix = el.dataset.prefix || '';
+          const suffix = el.dataset.suffix || '';
+          const separator = el.dataset.separator || '';
+          const duration = 1200;
+          const startTime = performance.now();
+
+          function easeOutQuart(t) {
+            return 1 - Math.pow(1 - t, 4);
+          }
+
+          function formatNumber(n) {
+            if (!separator) return n.toString();
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+          }
+
+          function animate(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const current = Math.round(easeOutQuart(progress) * target);
+            el.textContent = prefix + formatNumber(current) + suffix;
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          }
+
+          requestAnimationFrame(animate);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    counters.forEach(el => counterObserver.observe(el));
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', (e) => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

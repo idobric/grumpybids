@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://grumpybids.com/sitemap.xml
